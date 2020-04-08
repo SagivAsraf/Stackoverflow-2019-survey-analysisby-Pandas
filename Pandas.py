@@ -56,36 +56,66 @@ def main():
     pandas_logger.info("We asked our participants the following questions: \n %s",
                        tabulate(schema_data_frame, headers='keys', tablefmt='psql'))
 
+
     israel_filter = (data_frame['Country'] == "Israel");
-    israel_participants = data_frame.loc[israel_filter, ['Country','Student', 'LanguageWorkedWith', 'ConvertedComp']]
-    pandas_logger.info("\n*************\n************* Israelis participants: ************* \n*************\n ")
-    pandas_logger.info(tabulate(israel_participants.head(600), headers='keys', tablefmt='psql'))
-    pandas_logger.info(
-        "\n%d From %d of our participants are Israelis ! Respect\n" % (len(israel_participants), rows));
+    israel_participants = data_frame.loc[israel_filter, ['Country','Gender','Student', 'LanguageWorkedWith', 'ConvertedComp']]
+    pandas_logger.info("\n\n************* Israelis participants: *************\n ")
+    pandas_logger.info("Due to the fact we have %d Israelis participants we will display the first 100" % (len(israel_participants)))
+    pandas_logger.info(tabulate(israel_participants.head(100), headers='keys', tablefmt='psql'))
+    pandas_logger.info("\n***************************** %d From %d of our participants are Israelis! Respect *****************************\n" % (len(israel_participants), rows));
 
     pandas_logger.info("\nThe following table contains people who makes more than 10,000$ per month -> focused on "
                        "Country, the programming language they worked with and of course the yearly salary\n")
 
+    #Sort our data_frame by salaries!
+    data_frame.sort_values(by='ConvertedComp',inplace=True, ascending=False)
     high_salary_filter = (data_frame['ConvertedComp'] > 10000 * 12);
-    high_salary_results = data_frame.loc[high_salary_filter, ['Country', 'LanguageWorkedWith', 'ConvertedComp']]
+    high_salary_results = data_frame.loc[high_salary_filter, ['Country', 'LanguageWorkedWith', 'ConvertedComp','Gender']]
 
     pandas_logger.info(
-        "Due to the fact we have %d participants that earn more than 10,000$ per month, We will display just the first 100" % (
+        "Due to the fact we have %d participants that earn more than 10,000$ per month, We will display just the TOP 100 (sorted by salaries!)" % (
             len(high_salary_results)))
 
     pandas_logger.info(tabulate(high_salary_results.head(100), headers='keys', tablefmt='psql'))
 
-    pandas_logger.info("\n lets Analyze this data")
+    pandas_logger.info("lets Analyze this data")
     pandas_logger.info(
         "%d From %d of our participants, earn more than 10,000$ per month" % (len(high_salary_results), rows));
 
     pandas_logger.info("In percentage: %d%% from our participants earn more than 10,000$ per month" % (
             (len(high_salary_results) * 100) / rows));
 
-    israel_high_salary_results = high_salary_results["Country"].eq("Israel");
+    pandas_logger.info("\n\n************* Israelis High salary participants: *************\n ")
+    israel_high_salary_filter = high_salary_results["Country"].eq("Israel");
+    israel_high_salary_results = high_salary_results.loc[israel_high_salary_filter]
+    pandas_logger.info(tabulate(israel_high_salary_results, headers='keys', tablefmt='psql'))
+    pandas_logger.info("\n%d From %d of our participants, which earn more than 10,000$ per month are Israelis" % (len(israel_high_salary_results), len(high_salary_results)));
 
-    pandas_logger.info(tabulate(high_salary_results.loc[israel_high_salary_results], headers='keys', tablefmt='psql'))
+    pandas_logger.info("\n\n************* Women VS Men High salary participants: *************\n ")
+    women_high_salary_filter = high_salary_results["Gender"].eq("Woman");
+    men_high_salary_filter = high_salary_results["Gender"].eq("Man");
 
+    women_high_salary_results = high_salary_results.loc[women_high_salary_filter]
+    men_high_salary_results = high_salary_results.loc[men_high_salary_filter]
+
+    pandas_logger.info("%d From %d are women which earn more than 10,00$ per month" %(len(women_high_salary_results), len(high_salary_results)));
+    pandas_logger.info("%d From %d are men which earn more than 10,00$ per month" %(len(men_high_salary_results), len(high_salary_results)));
+
+    pandas_logger.info("\n\n************* Programming languages details: *************\n ")
+    python_filter = high_salary_results["LanguageWorkedWith"].str.contains('Python', na=False)
+    python_results = high_salary_results.loc[python_filter]
+    pandas_logger.info("** %d From %d which earn more than 10,00$ per month know Python" % (len(python_results),len(high_salary_results)));
+    java_filter = high_salary_results["LanguageWorkedWith"].str.contains('Java;', na=False)
+    java_results = high_salary_results.loc[java_filter]
+    pandas_logger.info("** %d From %d which earn more than 10,00$ per month know Java" % (len(java_results),len(high_salary_results)));
+    javaScript_filter = high_salary_results["LanguageWorkedWith"].str.contains('JavaScript', na=False)
+    javaScript_results = high_salary_results.loc[javaScript_filter]
+    pandas_logger.info("** %d From %d which earn more than 10,00$ per month know JavaScript" % (len(javaScript_results),len(high_salary_results)));
+
+    scala_filter = high_salary_results["LanguageWorkedWith"].str.contains('Scala', na=False)
+    scala_results = high_salary_results.loc[scala_filter]
+    pandas_logger.info("** %d From %d which earn more than 10,00$ per month know Scala" % (
+    len(scala_results), len(high_salary_results)));
 
     # pandas_logger.info("%d From %d", len(high_salary_results), rows);
 
