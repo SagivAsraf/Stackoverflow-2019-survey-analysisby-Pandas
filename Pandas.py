@@ -36,11 +36,12 @@ The pert itself is represent in Pert_Graph class, that is implement dictionary.
 import pandas as pd
 from Utils.EmailManagement import EmailManagement
 from Utils.PandasLogger import PandasLogger
+from tabulate import tabulate
 
 
 def main():
+    set_pd_options(pd)
     pandas_logger = set_logger()
-
     pandas_logger.info('Start collecting data for seminary project\n')
 
     data_frame = pd.read_csv('Survey Data Files/survey_results_public.csv')
@@ -52,19 +53,61 @@ def main():
     cols = shape[1]
 
     pandas_logger.info("We have %d rows and %d columns of data in our survey" % (rows, cols))
-    # We want to print all the columns (questions) of the survey!
-    pd.set_option("display.max_rows", cols);
-    pandas_logger.info("We asked our participants the following questions: \n %s", schema_data_frame)
+    pandas_logger.info("We asked our participants the following questions: \n %s",
+                       tabulate(schema_data_frame, headers='keys', tablefmt='psql'))
+
+    israel_filter = (data_frame['Country'] == "Israel");
+    israel_participants = data_frame.loc[israel_filter, ['Country','Student', 'LanguageWorkedWith', 'ConvertedComp']]
+    pandas_logger.info("\n*************\n************* Israelis participants: ************* \n*************\n ")
+    pandas_logger.info(tabulate(israel_participants.head(600), headers='keys', tablefmt='psql'))
+    pandas_logger.info(
+        "\n%d From %d of our participants are Israelis ! Respect\n" % (len(israel_participants), rows));
+
+    pandas_logger.info("\nThe following table contains people who makes more than 10,000$ per month -> focused on "
+                       "Country, the programming language they worked with and of course the yearly salary\n")
+
+    high_salary_filter = (data_frame['ConvertedComp'] > 10000 * 12);
+    high_salary_results = data_frame.loc[high_salary_filter, ['Country', 'LanguageWorkedWith', 'ConvertedComp']]
+
+    pandas_logger.info(
+        "Due to the fact we have %d participants that earn more than 10,000$ per month, We will display just the first 100" % (
+            len(high_salary_results)))
+
+    pandas_logger.info(tabulate(high_salary_results.head(100), headers='keys', tablefmt='psql'))
+
+    pandas_logger.info("\n lets Analyze this data")
+    pandas_logger.info(
+        "%d From %d of our participants, earn more than 10,000$ per month" % (len(high_salary_results), rows));
+
+    pandas_logger.info("In percentage: %d%% from our participants earn more than 10,000$ per month" % (
+            (len(high_salary_results) * 100) / rows));
+
+    israel_high_salary_results = high_salary_results["Country"].eq("Israel");
+
+    pandas_logger.info(tabulate(high_salary_results.loc[israel_high_salary_results], headers='keys', tablefmt='psql'))
+
+
+    # pandas_logger.info("%d From %d", len(high_salary_results), rows);
 
     # ************* Send the log file to my mail *************
 
-    seminar_mail = "pandasseminar@gmail.com"
-    seminar_password = "pandasseminarpython"
-    receiver_mail = "sagivasraf23@gmail.com"
+    # seminar_mail = "pandasseminar@gmail.com"
+    # seminar_password = "pandasseminarpython"
+    # receiver_mail = "sagivasraf23@gmail.com"
+    #
+    # log_file_name = extract_log_file_name(pandas_logger)
+    #
+    # EmailManagement.send_email(seminar_mail, seminar_password, receiver_mail, log_file_name)
 
-    log_file_name = extract_log_file_name(pandas_logger)
+    print("Finished, you can now watch your results in the log file ! :)")
 
-    EmailManagement.send_email(seminar_mail, seminar_password, receiver_mail, log_file_name)
+
+def set_pd_options(pd):
+    pd.set_option('display.max_rows', 500)
+    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.expand_frame_repr', False)
+    pd.set_option('max_colwidth', None)
 
 
 def extract_log_file_name(pandas_logger):
