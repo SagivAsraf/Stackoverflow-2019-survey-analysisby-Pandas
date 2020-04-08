@@ -34,6 +34,7 @@ The pert itself is represent in Pert_Graph class, that is implement dictionary.
 ---------------------------------------------------------
 '''
 import pandas as pd
+from Utils.EmailManagement import EmailManagement
 from Utils.PandasLogger import PandasLogger
 
 
@@ -53,12 +54,29 @@ def main():
     pandas_logger.info("We have %d rows and %d columns of data in our survey" % (rows, cols))
     # We want to print all the columns (questions) of the survey!
     pd.set_option("display.max_rows", cols);
-    pandas_logger.info("We asked our participants the following questions: \n %s" , schema_data_frame)
+    pandas_logger.info("We asked our participants the following questions: \n %s", schema_data_frame)
+
+    # ************* Send the log file to my mail *************
+
+    seminar_mail = "pandasseminar@gmail.com"
+    seminar_password = "pandasseminarpython"
+    receiver_mail = "sagivasraf23@gmail.com"
+
+    log_file_name = extract_log_file_name(pandas_logger)
+
+    EmailManagement.send_email(seminar_mail, seminar_password, receiver_mail, log_file_name)
+
+
+def extract_log_file_name(pandas_logger):
+    log_file_full_path = pandas_logger.handlers[0].baseFilename
+    log_path_array = log_file_full_path.split("\\")
+    return log_path_array[len(log_path_array) - 1]
 
 
 def set_logger():
     logger = PandasLogger()
     return logger.create_pandas_logger(logger, "Pandas_Seminary.log")
+
 
 if __name__ == '__main__':
     main()
