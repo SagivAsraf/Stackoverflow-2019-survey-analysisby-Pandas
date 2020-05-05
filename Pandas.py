@@ -17,9 +17,13 @@ import pandas as pd
 from Utils.EmailManagement import EmailManagement
 from Utils.PandasLogger import PandasLogger
 from tabulate import tabulate
+import matplotlib.pyplot as plt
+import time
+
 
 def main():
     set_pd_options(pd)
+    plt.close('all')
     pandas_logger = set_logger()
     pandas_logger.info('Start collecting data for seminary project\n')
 
@@ -31,19 +35,24 @@ def main():
     rows = shape[0]
     cols = shape[1]
 
+    time_the_graph_will_be_displayed_in_seconds = 8;
+
     print_some_meta_data_on_the_data(schema_data_frame, pandas_logger, rows, cols)
 
-    print_data_on_israelies(data_frame, pandas_logger, rows)
+    print_data_on_israelies(data_frame, pandas_logger, plt, rows, time_the_graph_will_be_displayed_in_seconds)
 
     high_salary_results = get_high_salary_results_after_filtered(data_frame)
 
-    print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high_salary_results)
+    print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high_salary_results,
+                                           time_the_graph_will_be_displayed_in_seconds)
 
-    print_data_on_israelies_whos_have_high_salary(pandas_logger, high_salary_results)
+    print_data_on_israelies_whos_have_high_salary(pandas_logger, high_salary_results,
+                                                  time_the_graph_will_be_displayed_in_seconds)
 
-    print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results)
+    print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results, time_the_graph_will_be_displayed_in_seconds)
 
-    print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results)
+    print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results,
+                                                     time_the_graph_will_be_displayed_in_seconds)
 
     # pandas_logger.info("%d From %d", len(high_salary_results), rows);
 
@@ -53,9 +62,7 @@ def main():
     print("Finished, you can now watch your results in the log file ! :)")
 
 
-
 def send_log_file_in_mail(receiver_mail, pandas_logger):
-
     seminar_mail = "pandasseminar@gmail.com"
     seminar_password = "pandasseminarpython"
 
@@ -70,7 +77,7 @@ def print_some_meta_data_on_the_data(schema_data_frame, pandas_logger, rows, col
                        tabulate(schema_data_frame, headers='keys', tablefmt='psql'))
 
 
-def print_data_on_israelies(data_frame,pandas_logger,rows):
+def print_data_on_israelies(data_frame, pandas_logger, plt, rows, time_the_graph_will_be_displayed_in_seconds):
     israel_filter = (data_frame['Country'] == "Israel");
     israel_participants = data_frame.loc[
         israel_filter, ['Country', 'Gender', 'Student', 'LanguageWorkedWith', 'ConvertedComp']]
@@ -82,14 +89,19 @@ def print_data_on_israelies(data_frame,pandas_logger,rows):
         "\n***************************** %d From %d of our participants are Israelis! Respect *****************************\n" % (
             len(israel_participants), rows));
 
+    title = "Israelies Participants V.S All other participants"
+    labels = ["Israeli Participant", "All other participants"]
+    data = [len(israel_participants), rows - len(israel_participants)]
+    colors = ['blue', 'green']
+    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
 
-def print_data_on_participants_high_salary(data_frame, pandas_logger, rows , high_salary_results):
+
+def print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high_salary_results, time_the_graph_will_be_displayed_in_seconds):
     pandas_logger.info("\nThe following table contains people who makes more than 10,000$ per month -> focused on "
                        "Country, the programming language they worked with and of course the yearly salary\n")
 
     # Sort our data_frame by salaries!
     data_frame.sort_values(by='ConvertedComp', inplace=True, ascending=False)
-
 
     pandas_logger.info(
         "Due to the fact we have %d participants that earn more than 10,000$ per month, We will display just the TOP 100 (sorted by salaries!)" % (
@@ -104,6 +116,12 @@ def print_data_on_participants_high_salary(data_frame, pandas_logger, rows , hig
     pandas_logger.info("In percentage: %d%% from our participants earn more than 10,000$ per month" % (
             (len(high_salary_results) * 100) / rows));
 
+    title = "Participants who earn more than 10,000$ per month V.S Other participants"
+    labels = ["Earn more than 10,000$ Participants", "All other participants"]
+    data = [len(high_salary_results), rows - len(high_salary_results)]
+    colors = ['green', 'red']
+    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
+
 
 def get_high_salary_results_after_filtered(data_frame):
     high_salary_filter = (data_frame['ConvertedComp'] > 10000 * 12);
@@ -113,7 +131,7 @@ def get_high_salary_results_after_filtered(data_frame):
     return high_salary_results
 
 
-def print_data_on_israelies_whos_have_high_salary(pandas_logger, high_salary_results):
+def print_data_on_israelies_whos_have_high_salary(pandas_logger, high_salary_results, time_the_graph_will_be_displayed_in_seconds):
     pandas_logger.info("\n\n************* Israelis High salary participants: *************\n ")
     israel_high_salary_filter = high_salary_results["Country"].eq("Israel");
     israel_high_salary_results = high_salary_results.loc[israel_high_salary_filter]
@@ -121,8 +139,14 @@ def print_data_on_israelies_whos_have_high_salary(pandas_logger, high_salary_res
     pandas_logger.info("\n%d From %d of our participants, which earn more than 10,000$ per month are Israelis" % (
         len(israel_high_salary_results), len(high_salary_results)));
 
+    title = "Israelis who earn High Salary V.S All other participants who earn high salary"
+    labels = ["Israelis who earn High Salary", "All other participants who earn high salary"]
+    data = [len(israel_high_salary_results), len(high_salary_results) - len(israel_high_salary_results)]
+    colors = ['blue', 'green']
+    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
 
-def print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results):
+
+def print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results, time_the_graph_will_be_displayed_in_seconds):
     pandas_logger.info("\n\n************* Women VS Men High salary participants: *************\n ")
     women_high_salary_filter = high_salary_results["Gender"].eq("Woman");
     men_high_salary_filter = high_salary_results["Gender"].eq("Man");
@@ -135,8 +159,14 @@ def print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results):
     pandas_logger.info("%d From %d are men which earn more than 10,00$ per month" % (
         len(men_high_salary_results), len(high_salary_results)));
 
+    title = "Men who earn High Salary V.S Women who earn high salary"
+    labels = ["Men who earn High Salary", " Women who earn high salary"]
+    data = [len(men_high_salary_results), len(women_high_salary_results)]
+    colors = ['red', 'cyan']
+    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
 
-def print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results):
+
+def print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results, time_the_graph_will_be_displayed_in_seconds):
     pandas_logger.info("\n\n************* Programming languages details: *************\n ")
     python_filter = high_salary_results["LanguageWorkedWith"].str.contains('Python', na=False)
     python_results = high_salary_results.loc[python_filter]
@@ -155,6 +185,33 @@ def print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_
     scala_results = high_salary_results.loc[scala_filter]
     pandas_logger.info("** %d From %d which earn more than 10,00$ per month know Scala" % (
         len(scala_results), len(high_salary_results)));
+
+    title = "Participants who earn high salary claim they have knowledge in:"
+    labels = ["Python", "Java", "JavaScript", "Scala"]
+    data = [len(python_results), len(java_results), len(javaScript_results), len(scala_results)]
+    colors = ['green', 'blue', 'red', 'black']
+    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
+
+
+def get_timer_plt_show_time_with_callback(plt,  time_the_graph_will_be_displayed_in_seconds):
+    fig = plt.figure()
+    timer = fig.canvas.new_timer(
+        interval= time_the_graph_will_be_displayed_in_seconds * 1000)  # creating a timer object and setting an interval of time_the_graph_will_be_displayed_in_seconds seconds
+    timer.add_callback(close_event)
+
+    return timer
+
+
+def display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors):
+    timer = get_timer_plt_show_time_with_callback(plt, time_the_graph_will_be_displayed_in_seconds);
+    plt.title(title, fontdict=None, loc='center')
+    plt.bar(labels, data, color=colors)
+    timer.start()
+    plt.show()
+
+
+def close_event():
+    plt.close()
 
 
 def set_pd_options(pd):
