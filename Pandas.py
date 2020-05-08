@@ -14,12 +14,23 @@
 ---------------------------------------------------------
 '''
 import pandas as pd
-
+from time import sleep
 from Utils import Constants
 from Utils.EmailManagement import EmailManagement
 from Utils.PandasLogger import PandasLogger
 from tabulate import tabulate
 import matplotlib.pyplot as plt
+import json
+
+
+def read_configurations_file():
+    with open('config.json') as json_file:
+        data = json.load(json_file)
+        configurations = data['configurations']
+        time_the_graph_will_be_displayed_in_seconds = int(configurations['time graph will be displayed in seconds'])
+        email = configurations['email']
+        statistical_analysis_type_of_viewing = configurations['statistical analysis displayed in diagram or pie']
+    return time_the_graph_will_be_displayed_in_seconds, email, statistical_analysis_type_of_viewing
 
 
 def main():
@@ -32,33 +43,40 @@ def main():
     schema_data_frame = pd.read_csv("Survey Data Files/survey_results_schema.csv")
     pandas_logger.info('Some basic details (META-DATA) on our data:')
 
+    time_the_graph_will_be_displayed_in_seconds, email, statistical_analysis_type_of_viewing = read_configurations_file()
+
     shape = data_frame.shape;
     rows = shape[0]
     cols = shape[1]
 
-    time_the_graph_will_be_displayed_in_seconds = 2;
+    set_plt_size()
 
     print_some_meta_data_on_the_data(schema_data_frame, pandas_logger, rows, cols)
 
-    print_data_on_israelis(data_frame, pandas_logger, plt, rows, time_the_graph_will_be_displayed_in_seconds)
+    print_data_on_israelis(data_frame, pandas_logger, rows, time_the_graph_will_be_displayed_in_seconds,
+                           statistical_analysis_type_of_viewing)
 
     high_salary_results = get_high_salary_results_after_filtered(data_frame)
 
     print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high_salary_results,
-                                           time_the_graph_will_be_displayed_in_seconds)
+                                           time_the_graph_will_be_displayed_in_seconds,
+                                           statistical_analysis_type_of_viewing)
 
     print_data_on_israelis_whos_have_high_salary(pandas_logger, high_salary_results,
-                                                 time_the_graph_will_be_displayed_in_seconds)
+                                                 time_the_graph_will_be_displayed_in_seconds,
+                                                 statistical_analysis_type_of_viewing)
 
-    print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results, time_the_graph_will_be_displayed_in_seconds)
+    print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results, time_the_graph_will_be_displayed_in_seconds,
+                                        statistical_analysis_type_of_viewing)
 
     print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results,
-                                                     time_the_graph_will_be_displayed_in_seconds)
+                                                     time_the_graph_will_be_displayed_in_seconds,
+                                                     statistical_analysis_type_of_viewing)
 
     # pandas_logger.info("%d From %d", len(high_salary_results), rows);
 
     # ************* Send the log file to my mail *************
-    send_log_file_in_mail("sagivasraf23@gmail.com", pandas_logger)
+    send_log_file_in_mail(email, pandas_logger)
 
     print("Finished, you can now watch your results in the log file ! :)")
 
@@ -78,7 +96,8 @@ def print_some_meta_data_on_the_data(schema_data_frame, pandas_logger, rows, col
                        tabulate(schema_data_frame, headers='keys', tablefmt='psql'))
 
 
-def print_data_on_israelis(data_frame, pandas_logger, plt, rows, time_the_graph_will_be_displayed_in_seconds):
+def print_data_on_israelis(data_frame, pandas_logger, rows, time_the_graph_will_be_displayed_in_seconds,
+                           statistical_analysis_type_of_viewing):
     israel_filter = (data_frame['Country'] == "Israel");
     israel_participants = data_frame.loc[
         israel_filter, ['Country', 'Gender', 'Student', 'LanguageWorkedWith', 'ConvertedComp']]
@@ -93,13 +112,14 @@ def print_data_on_israelis(data_frame, pandas_logger, plt, rows, time_the_graph_
     title = "Israelis Participants V.S All other participants"
     labels = ["Israelis Participant", "All other participants"]
     data = [len(israel_participants), rows - len(israel_participants)]
-    colors = ['lightskyblue','gold']
+    colors = ['lightskyblue', 'gold']
 
-    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
 
 
 def print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high_salary_results,
-                                           time_the_graph_will_be_displayed_in_seconds):
+                                           time_the_graph_will_be_displayed_in_seconds,
+                                           statistical_analysis_type_of_viewing):
     pandas_logger.info("\nThe following table contains people who makes more than %s per month -> focused on "
                        "Country, the programming language they worked with and of course the yearly salary\n",
                        Constants.HIGH_SALARY_STRING)
@@ -121,11 +141,11 @@ def print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high
     pandas_logger.info("In percentage: %d%% from our participants earn more than %s per month" % (
         (len(high_salary_results) * 100) / rows, Constants.HIGH_SALARY_STRING));
 
-    title = "Participants who earn more than " + Constants.HIGH_SALARY_STRING + "per month V.S Other participants"
+    title = "Participants who earn who earn high salary V.S Other participants"
     labels = ["Earn more than " + Constants.HIGH_SALARY_STRING + " Participants", "All other participants"]
     data = [len(high_salary_results), rows - len(high_salary_results)]
     colors = ['yellowgreen', 'lightcoral']
-    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
 
 
 def get_high_salary_results_after_filtered(data_frame):
@@ -137,7 +157,7 @@ def get_high_salary_results_after_filtered(data_frame):
 
 
 def print_data_on_israelis_whos_have_high_salary(pandas_logger, high_salary_results,
-                                                 time_the_graph_will_be_displayed_in_seconds):
+                                                 time_the_graph_will_be_displayed_in_seconds, statistical_analysis_type_of_viewing):
     pandas_logger.info("\n\n************* Israelis High salary participants: *************\n ")
     israel_high_salary_filter = high_salary_results["Country"].eq("Israel");
     israel_high_salary_results = high_salary_results.loc[israel_high_salary_filter]
@@ -145,15 +165,15 @@ def print_data_on_israelis_whos_have_high_salary(pandas_logger, high_salary_resu
     pandas_logger.info("\n%d From %d of our participants, which earn more than %s per month are Israelis" % (
         len(israel_high_salary_results), len(high_salary_results), Constants.HIGH_SALARY_STRING));
 
-    title = "Israelis who earn High Salary V.S All other participants who earn high salary"
+    title = "Israelis who earn high salary V.S All other participants who earn high salary"
     labels = ["Israelis who earn High Salary", "All other participants who earn high salary"]
     data = [len(israel_high_salary_results), len(high_salary_results) - len(israel_high_salary_results)]
     colors = ['lightskyblue', 'yellowgreen']
-    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
 
 
 def print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results,
-                                        time_the_graph_will_be_displayed_in_seconds):
+                                        time_the_graph_will_be_displayed_in_seconds,statistical_analysis_type_of_viewing):
     pandas_logger.info("\n\n************* Women VS Men High salary participants: *************\n ")
     women_high_salary_filter = high_salary_results["Gender"].eq("Woman");
     men_high_salary_filter = high_salary_results["Gender"].eq("Man");
@@ -171,11 +191,11 @@ def print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results,
     data = [len(men_high_salary_results), len(women_high_salary_results)]
     colors = ['lightcoral', 'lightskyblue']
 
-    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
 
 
 def print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results,
-                                                     time_the_graph_will_be_displayed_in_seconds):
+                                                     time_the_graph_will_be_displayed_in_seconds, statistical_analysis_type_of_viewing):
     pandas_logger.info("\n\n************* Programming languages details: *************\n ")
     python_filter = high_salary_results["LanguageWorkedWith"].str.contains('Python', na=False)
     python_results = high_salary_results.loc[python_filter]
@@ -199,10 +219,11 @@ def print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_
     labels = ["Python", "Java", "JavaScript", "Scala"]
     data = [len(python_results), len(java_results), len(javaScript_results), len(scala_results)]
     colors = ['gold', 'yellowgreen', 'lightcoral', 'lightskyblue']
-    display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds * 2, colors)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds * 2, colors,
+                          statistical_analysis_type_of_viewing)
 
 
-def get_timer_plt_show_time_with_callback(plt, time_the_graph_will_be_displayed_in_seconds):
+def get_timer_plt_show_time_with_callback(time_the_graph_will_be_displayed_in_seconds):
     fig = plt.figure()
     timer = fig.canvas.new_timer(
         interval=time_the_graph_will_be_displayed_in_seconds * 1000)  # creating a timer object and setting an interval of time_the_graph_will_be_displayed_in_seconds seconds
@@ -211,23 +232,19 @@ def get_timer_plt_show_time_with_callback(plt, time_the_graph_will_be_displayed_
     return timer
 
 
-def display_data_visually(plt, title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors):
-    timer = get_timer_plt_show_time_with_callback(plt, time_the_graph_will_be_displayed_in_seconds);
+def display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing):
+    timer = get_timer_plt_show_time_with_callback(time_the_graph_will_be_displayed_in_seconds);
     plt.title(title, fontdict=None, loc='center')
-    #plt.bar(labels, data, color=colors)
 
-    plt.pie(data, labels=labels, colors=colors,
+    diagram_or_pie = statistical_analysis_type_of_viewing[title];
+
+    if (diagram_or_pie == "diagram"):
+        plt.bar(labels, data, color=colors)
+    else:
+        plt.pie(data, labels=labels, colors=colors,
             autopct='%1.1f%%', shadow=True, startangle=140)
-
-    plt.axis('equal')
-
-    # fig_size = plt.rcParams["figure.figsize"]
-    # fig_size[0] = 15
-    # fig_size[1] = 12
-    # plt.rcParams["figure.figsize"] = fig_size
-
-    mng = plt.get_current_fig_manager()
-    mng.full_screen_toggle()
+        plt.axis('equal')
 
     timer.start()
     plt.show()
@@ -253,6 +270,13 @@ def extract_log_file_name(pandas_logger):
 def set_logger():
     logger = PandasLogger()
     return logger.create_pandas_logger(logger, "Pandas_Seminary.log")
+
+
+def set_plt_size():
+    fig_size = plt.rcParams["figure.figsize"]
+    fig_size[0] = 12
+    fig_size[1] = 7
+    plt.rcParams["figure.figsize"] = fig_size
 
 
 if __name__ == '__main__':

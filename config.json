@@ -1,0 +1,14 @@
+{
+  "configurations": {
+    "time graph will be displayed in seconds": "1",
+    "email": "sagivasraf23@gmail.com",
+    "statistical analysis displayed in diagram or pie": {
+      "Israelis Participants V.S All other participants": "diagram",
+      "Participants who earn who earn high salary V.S Other participants": "pie",
+      "Israelis who earn high salary V.S All other participants who earn high salary": "diagram",
+      "Men who earn High Salary V.S Women who earn high salary": "diagram",
+      "Participants who earn high salary claim they have knowledge in:": "pie"
+
+    }
+  }
+}
