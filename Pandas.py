@@ -23,16 +23,6 @@ import matplotlib.pyplot as plt
 import json
 
 
-def read_configurations_file():
-    with open('config.json') as json_file:
-        data = json.load(json_file)
-        configurations = data['configurations']
-        time_the_graph_will_be_displayed_in_seconds = int(configurations['time graph will be displayed in seconds'])
-        email = configurations['email']
-        statistical_analysis_type_of_viewing = configurations['statistical analysis displayed in diagram or pie']
-    return time_the_graph_will_be_displayed_in_seconds, email, statistical_analysis_type_of_viewing
-
-
 def main():
     plt.close('all')
     set_pd_options(pd)
@@ -53,6 +43,18 @@ def main():
 
     print_some_meta_data_on_the_data(schema_data_frame, pandas_logger, rows, cols)
 
+    print_general_median_data(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                              statistical_analysis_type_of_viewing)
+
+    print_data_on_hobbies(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                          statistical_analysis_type_of_viewing)
+
+    print_data_on_social_media(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                               statistical_analysis_type_of_viewing)
+
+    print_data_on_participants_countries(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                                         statistical_analysis_type_of_viewing)
+
     print_data_on_israelis(data_frame, pandas_logger, rows, time_the_graph_will_be_displayed_in_seconds,
                            statistical_analysis_type_of_viewing)
 
@@ -69,16 +71,41 @@ def main():
     print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results, time_the_graph_will_be_displayed_in_seconds,
                                         statistical_analysis_type_of_viewing)
 
+    print_data_on_participants_salaries_by_countries(data_frame, pandas_logger,
+                                                     time_the_graph_will_be_displayed_in_seconds,
+                                                     statistical_analysis_type_of_viewing)
+
     print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results,
                                                      time_the_graph_will_be_displayed_in_seconds,
                                                      statistical_analysis_type_of_viewing)
 
-    # pandas_logger.info("%d From %d", len(high_salary_results), rows);
+    print_data_on_israelis_known_languages(data_frame, pandas_logger,
+                                       time_the_graph_will_be_displayed_in_seconds,
+                                       statistical_analysis_type_of_viewing)
+
+
+    print_data_on_hobbies_and_salaries(data_frame, pandas_logger,
+                                       time_the_graph_will_be_displayed_in_seconds,
+                                       statistical_analysis_type_of_viewing)
+
+    print_data_on_years_of_experience_and_salaries(data_frame, pandas_logger,
+                                       time_the_graph_will_be_displayed_in_seconds,
+                                       statistical_analysis_type_of_viewing)
 
     # ************* Send the log file to my mail *************
     send_log_file_in_mail(email, pandas_logger)
 
     print("Finished, you can now watch your results in the log file ! :)")
+
+
+def read_configurations_file():
+    with open('config.json') as json_file:
+        data = json.load(json_file)
+        configurations = data['configurations']
+        time_the_graph_will_be_displayed_in_seconds = int(configurations['time graph will be displayed in seconds'])
+        email = configurations['email']
+        statistical_analysis_type_of_viewing = configurations['statistical analysis displayed in diagram or pie']
+    return time_the_graph_will_be_displayed_in_seconds, email, statistical_analysis_type_of_viewing
 
 
 def send_log_file_in_mail(receiver_mail, pandas_logger):
@@ -93,18 +120,202 @@ def send_log_file_in_mail(receiver_mail, pandas_logger):
 def print_some_meta_data_on_the_data(schema_data_frame, pandas_logger, rows, cols):
     pandas_logger.info("We have %d rows and %d columns of data in our survey" % (rows, cols))
     pandas_logger.info("We asked our participants the following questions: \n %s",
-                       tabulate(schema_data_frame, headers='keys', tablefmt='psql'))
+                       tabulate(schema_data_frame, headers='keys', tablefmt='psql', showindex=False))
+
+
+def print_general_median_data(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                              statistical_analysis_type_of_viewing):
+    median = data_frame.median()
+    salary_median = round(median['ConvertedComp'] / 12,2)
+    age_median = median['Age']
+    work_weeks_hours_median = median['WorkWeekHrs']
+
+    pandas_logger.info("\n\n************* Medians Data: *************\n ")
+    pandas_logger.info(
+        "The median age of our participants is: %d \nThe median salary of our participants is: %d \nThe median weekly hours of our participants is: %d" % (
+            age_median, salary_median, work_weeks_hours_median))
+
+    title = "Median data on participants participants"
+    labels = ["Age", "Month salary", "Weekly work hours"]
+    data = [age_median, salary_median, work_weeks_hours_median]
+    colors = ['gold', 'lightskyblue', 'lightcoral']
+
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
+
+
+def print_data_on_hobbies_and_salaries(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                                       statistical_analysis_type_of_viewing):
+    hobby_group = data_frame.groupby(["Hobbyist"])
+
+    hobby_median_salary = round(hobby_group.get_group("Yes")["ConvertedComp"].median() / 12, 2)
+    no_hobby_median_salary = round(hobby_group.get_group("No")["ConvertedComp"].median() / 12, 2)
+
+    pandas_logger.info("\n\n************* Month salary median categorized by -> is the participant code as a hobby? *************\n ")
+    pandas_logger.info(
+        "\nThe month salary median of the people who code as a hobby: %d \nThe month salary median of the people who don't code as a hobby: %d" % (
+            hobby_median_salary, no_hobby_median_salary))
+
+    title = "Month salary median -> Programming as a hobby"
+    labels = ["Yes", "No"]
+    data = [hobby_median_salary, no_hobby_median_salary]
+    colors = ['gold', 'lightcoral']
+
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
+
+
+def print_data_on_hobbies(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                          statistical_analysis_type_of_viewing):
+    programming_as_a_hobby = data_frame["Hobbyist"].value_counts()
+    yes = programming_as_a_hobby['Yes']
+    no = programming_as_a_hobby['No']
+
+    pandas_logger.info("\n\n************* Hobbies Data: *************\n ")
+    pandas_logger.info(
+        "\n%d claims they programmingas a hobby \nAnd %d says the does not programming as a hobby" % (
+            yes, no))
+
+    title = "Programming as a hobby"
+    labels = ["Yes", "No"]
+    data = [yes, no]
+    colors = ['gold', 'red']
+
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
+
+
+def print_data_on_social_media(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                               statistical_analysis_type_of_viewing):
+    social_media = data_frame["SocialMedia"].value_counts()
+    facebook = social_media['Facebook']
+    twitter = social_media['Twitter']
+    whatsapp = social_media['WhatsApp']
+    youtube = social_media['YouTube']
+    linkedin = social_media['LinkedIn']
+    instagram = social_media['Instagram']
+    not_using = social_media["I don't use social media"]
+
+    pandas_logger.info("\n\n************* Social media Data: *************\n ")
+    pandas_logger.info(
+        "\n%d claims they using Facebook.\n%d claims they using Twitter:,\n%d claims they using WhtasApp:,"
+        "\n%d claims they using Youtube:,\n%d claims they using Linkedin:, \n%d claims they using Instagram:,\n%d claims they are not using social media." % (
+            facebook, twitter, whatsapp, youtube, linkedin, instagram, not_using))
+
+    title = "Social media usage"
+    labels = ["Facebook", "Twitter", "WhatsApp", "YouTube", "Linkedin", "Instagram", "I don't use social media"]
+    data = [facebook, twitter, whatsapp, youtube, linkedin, instagram, not_using]
+    colors = ['blue', 'lightskyblue', 'green', 'red', 'gold', 'pink', 'darkgrey']
+
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
+
+
+def print_data_on_participants_countries(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                                         statistical_analysis_type_of_viewing):
+    participants_counties = data_frame["Country"].value_counts()
+    united_states = participants_counties['United States']
+    india = participants_counties['India']
+    germany = participants_counties['Germany']
+    united_kingdom = participants_counties['United Kingdom']
+    spain = participants_counties['Spain']
+    italy = participants_counties['Italy']
+    israel = participants_counties['Israel']
+
+    pandas_logger.info("\n\n************* Participants came from: *************\n ")
+    pandas_logger.info(
+        "\n%d Says they came from the United States.\n%d Says they came from India\n%d Says they came from Germany."
+        "\n%d Says they came from United Kingdom.\n%d Says they came from Spain\n%d Says they came from Italy.\n%d Says they came from Israel.\n" % (
+            united_states, india, germany, united_kingdom, spain, italy, israel))
+
+    title = "Participants came from:"
+    labels = ["United States", "India", "Germany", "United Kingdom", "Spain", "Italy", "Israel"]
+    data = [united_states, india, germany, united_kingdom, spain, italy, israel]
+    colors = ['red', 'lightgrey', 'yellow', 'blue', 'yellow', 'lightgreen', 'lightblue']
+
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
+
+
+def print_data_on_participants_salaries_by_countries(data_frame, pandas_logger,
+                                                     time_the_graph_will_be_displayed_in_seconds,
+                                                     statistical_analysis_type_of_viewing):
+    country_group = data_frame.groupby(["Country"])
+    usa = "United States"
+    india = "India"
+    germany = "Germany"
+    united_kingdom = "United Kingdom"
+    spain = "Spain"
+    italy = "Italy"
+    israel = "Israel"
+
+    usa_participants_month_salary_median = round(country_group.get_group(usa)["ConvertedComp"].median() / 12, 2)
+    india_participants_month_salary_median = round(country_group.get_group(india)["ConvertedComp"].median() / 12, 2)
+    germany_participants_month_salary_median = round(country_group.get_group(germany)["ConvertedComp"].median() / 12, 2)
+    united_kingdom_participants_month_salary_median = round(country_group.get_group(united_kingdom)[
+                                                                "ConvertedComp"].median() / 12, 2)
+    spain_participants_month_salary_median = round(country_group.get_group(spain)["ConvertedComp"].median() / 12, 2)
+    italy_participants_month_salary_median = round(country_group.get_group(italy)["ConvertedComp"].median() / 12, 2)
+    israel_participants_month_salary_median = round(country_group.get_group(israel)["ConvertedComp"].median() / 12, 2)
+
+    pandas_logger.info("\n\n************* Participants month salary median by countries Data: *************\n ")
+    pandas_logger.info(
+        "\nAmericans month salary median is: %d.\nIndian month salary median is: %d.\nGermans month salary median is: %d."
+        "\nBritish month salary median is: %d.\nSpanish month salary median is: %d.\nItalians month salary median is: %d.\nIsraelis month salary median is: %d.\n" % (
+            usa_participants_month_salary_median, india_participants_month_salary_median,
+            germany_participants_month_salary_median,
+            united_kingdom_participants_month_salary_median, spain_participants_month_salary_median,
+            italy_participants_month_salary_median, israel_participants_month_salary_median))
+
+    title = "Participants month salary Median categorized by countries:"
+    labels = [usa, india, germany, united_kingdom, spain, italy, israel]
+    data = [usa_participants_month_salary_median, india_participants_month_salary_median,
+            germany_participants_month_salary_median,
+            united_kingdom_participants_month_salary_median, spain_participants_month_salary_median,
+            italy_participants_month_salary_median, israel_participants_month_salary_median]
+    colors = ['red', 'lightgrey', 'yellow', 'blue', 'yellow', 'lightgreen', 'lightblue']
+
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
+
+
+def print_data_on_years_of_experience_and_salaries(data_frame, pandas_logger,
+                                                   time_the_graph_will_be_displayed_in_seconds,
+                                                   statistical_analysis_type_of_viewing):
+    years_of_experience_group = data_frame.groupby(["YearsCodePro"])
+    one_year = round(years_of_experience_group.get_group("1")["ConvertedComp"].median() / 12,2)
+    three_years = round(years_of_experience_group.get_group("3")["ConvertedComp"].median() / 12,2)
+    four_years = round(years_of_experience_group.get_group("4")["ConvertedComp"].median() / 12,2)
+    six_years = round(years_of_experience_group.get_group("6")["ConvertedComp"].median() / 12,2)
+    fifteen_years = round(years_of_experience_group.get_group("15")["ConvertedComp"].median() / 12,2)
+    twenty_five_years = round(years_of_experience_group.get_group("25")["ConvertedComp"].median() / 12,2)
+
+    pandas_logger.info("\n\n************* Participants month salary median by years of Experience: *************\n ")
+    pandas_logger.info(
+        "\nOne year experience participants month salary median is: %d.\nThree years experience participants month salary median is: %d.\nFour years experience participants month salary median is: %d."
+        "\nSix years experience participants month salary median is: %d.\nFifteen years experience participants month salary median is: %d.\nTwenty five years experience participants month salary median is: %d." % (
+            one_year,three_years,four_years,six_years,fifteen_years,twenty_five_years))
+
+    title = "Participants month salary Median categorized by years of experience:"
+    labels = ["1", "3" , "4", "6", "15", "25"]
+    data = [one_year, three_years,
+            four_years,
+            six_years, fifteen_years,
+            twenty_five_years]
+    colors = ['lightcoral', 'lightgrey', 'lightblue', 'blue', 'yellow', 'lightgreen']
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
 
 
 def print_data_on_israelis(data_frame, pandas_logger, rows, time_the_graph_will_be_displayed_in_seconds,
                            statistical_analysis_type_of_viewing):
     israel_filter = (data_frame['Country'] == "Israel");
     israel_participants = data_frame.loc[
-        israel_filter, ['Country', 'Gender', 'Student', 'LanguageWorkedWith', 'ConvertedComp']]
+        israel_filter, ['Respondent', 'Country', 'Gender', 'Student', 'LanguageWorkedWith', 'ConvertedComp']]
     pandas_logger.info("\n\n************* Israelis participants: *************\n ")
     pandas_logger.info(
         "Due to the fact we have %d Israelis participants we will display the first 100" % (len(israel_participants)))
-    pandas_logger.info(tabulate(israel_participants.head(100), headers='keys', tablefmt='psql'))
+    pandas_logger.info(tabulate(israel_participants.head(100), headers='keys', tablefmt='psql', showindex=False))
     pandas_logger.info(
         "\n***************************** %d From %d of our participants are Israelis! Respect *****************************\n" % (
             len(israel_participants), rows));
@@ -114,7 +325,8 @@ def print_data_on_israelis(data_frame, pandas_logger, rows, time_the_graph_will_
     data = [len(israel_participants), rows - len(israel_participants)]
     colors = ['lightskyblue', 'gold']
 
-    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
 
 
 def print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high_salary_results,
@@ -131,7 +343,7 @@ def print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high
         "Due to the fact we have %d participants that earn more than %s per month, We will display just the TOP 100 (sorted by salaries!)" % (
             len(high_salary_results), Constants.HIGH_SALARY_STRING))
 
-    pandas_logger.info(tabulate(high_salary_results.head(100), headers='keys', tablefmt='psql'))
+    pandas_logger.info(tabulate(high_salary_results.head(100), headers='keys', tablefmt='psql', showindex=False))
 
     pandas_logger.info("lets Analyze this data")
     pandas_logger.info(
@@ -145,23 +357,25 @@ def print_data_on_participants_high_salary(data_frame, pandas_logger, rows, high
     labels = ["Earn more than " + Constants.HIGH_SALARY_STRING + " Participants", "All other participants"]
     data = [len(high_salary_results), rows - len(high_salary_results)]
     colors = ['yellowgreen', 'lightcoral']
-    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
 
 
 def get_high_salary_results_after_filtered(data_frame):
     high_salary_filter = (data_frame['ConvertedComp'] > Constants.HIGH_SALARY * Constants.NUM_OF_MONTH_IN_A_YEAR);
     high_salary_results = data_frame.loc[
-        high_salary_filter, ['Country', 'LanguageWorkedWith', 'ConvertedComp', 'Gender']]
+        high_salary_filter, ['Respondent', 'Country', 'LanguageWorkedWith', 'ConvertedComp', 'Gender']]
 
     return high_salary_results
 
 
 def print_data_on_israelis_whos_have_high_salary(pandas_logger, high_salary_results,
-                                                 time_the_graph_will_be_displayed_in_seconds, statistical_analysis_type_of_viewing):
+                                                 time_the_graph_will_be_displayed_in_seconds,
+                                                 statistical_analysis_type_of_viewing):
     pandas_logger.info("\n\n************* Israelis High salary participants: *************\n ")
     israel_high_salary_filter = high_salary_results["Country"].eq("Israel");
     israel_high_salary_results = high_salary_results.loc[israel_high_salary_filter]
-    pandas_logger.info(tabulate(israel_high_salary_results, headers='keys', tablefmt='psql'))
+    pandas_logger.info(tabulate(israel_high_salary_results, headers='keys', tablefmt='psql', showindex=False))
     pandas_logger.info("\n%d From %d of our participants, which earn more than %s per month are Israelis" % (
         len(israel_high_salary_results), len(high_salary_results), Constants.HIGH_SALARY_STRING));
 
@@ -169,11 +383,13 @@ def print_data_on_israelis_whos_have_high_salary(pandas_logger, high_salary_resu
     labels = ["Israelis who earn High Salary", "All other participants who earn high salary"]
     data = [len(israel_high_salary_results), len(high_salary_results) - len(israel_high_salary_results)]
     colors = ['lightskyblue', 'yellowgreen']
-    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
 
 
 def print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results,
-                                        time_the_graph_will_be_displayed_in_seconds,statistical_analysis_type_of_viewing):
+                                        time_the_graph_will_be_displayed_in_seconds,
+                                        statistical_analysis_type_of_viewing):
     pandas_logger.info("\n\n************* Women VS Men High salary participants: *************\n ")
     women_high_salary_filter = high_salary_results["Gender"].eq("Woman");
     men_high_salary_filter = high_salary_results["Gender"].eq("Man");
@@ -191,11 +407,13 @@ def print_data_on_man_vs_women_salaries(pandas_logger, high_salary_results,
     data = [len(men_high_salary_results), len(women_high_salary_results)]
     colors = ['lightcoral', 'lightskyblue']
 
-    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors, statistical_analysis_type_of_viewing)
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
 
 
 def print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_results,
-                                                     time_the_graph_will_be_displayed_in_seconds, statistical_analysis_type_of_viewing):
+                                                     time_the_graph_will_be_displayed_in_seconds,
+                                                     statistical_analysis_type_of_viewing):
     pandas_logger.info("\n\n************* Programming languages details: *************\n ")
     python_filter = high_salary_results["LanguageWorkedWith"].str.contains('Python', na=False)
     python_results = high_salary_results.loc[python_filter]
@@ -215,11 +433,47 @@ def print_data_on_programing_languages_high_salaries(pandas_logger, high_salary_
     pandas_logger.info("** %d From %d which earn more than %s per month know Scala" % (
         len(scala_results), len(high_salary_results), Constants.HIGH_SALARY_STRING));
 
+    c_sharp_filter = high_salary_results["LanguageWorkedWith"].str.contains('C#;', na=False)
+    c_sharp_results = high_salary_results.loc[c_sharp_filter]
+    pandas_logger.info("** %d From %d which earn more than %s per month know C#" % (
+        len(c_sharp_results), len(high_salary_results), Constants.HIGH_SALARY_STRING));
+
+    c_filter = high_salary_results["LanguageWorkedWith"].str.contains('C;', na=False)
+    c_results = high_salary_results.loc[c_filter]
+    pandas_logger.info("** %d From %d which earn more than %s per month know C" % (
+        len(c_results), len(high_salary_results), Constants.HIGH_SALARY_STRING));
+
     title = "Participants who earn high salary claim they have knowledge in:"
-    labels = ["Python", "Java", "JavaScript", "Scala"]
-    data = [len(python_results), len(java_results), len(javaScript_results), len(scala_results)]
-    colors = ['gold', 'yellowgreen', 'lightcoral', 'lightskyblue']
-    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds * 2, colors,
+    labels = ["Python", "JavaScript", "Java", "Scala" , "C#","C++"]
+    data = [len(python_results), len(java_results), len(javaScript_results), len(scala_results), len(c_sharp_results),len(c_results)]
+    colors = ['gold', 'yellowgreen', 'lightcoral', 'lightskyblue',"gray", "lightblue"]
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
+                          statistical_analysis_type_of_viewing)
+
+def print_data_on_israelis_known_languages(data_frame, pandas_logger, time_the_graph_will_be_displayed_in_seconds,
+                                           statistical_analysis_type_of_viewing):
+    israel_filter = data_frame["Country"] == "Israel"
+
+    israeli_people_know_python = data_frame.loc[israel_filter]['LanguageWorkedWith'].str.contains("Python", na=False).sum()
+    israeli_people_know_javascript = data_frame.loc[israel_filter]['LanguageWorkedWith'].str.contains("JavaScript",na=False).sum()
+    israeli_people_know_java = data_frame.loc[israel_filter]['LanguageWorkedWith'].str.contains("Java;",na=False).sum()
+    israeli_people_know_scala = data_frame.loc[israel_filter]['LanguageWorkedWith'].str.contains("Scala",na=False).sum()
+    israeli_people_know_c_sharp = data_frame.loc[israel_filter]['LanguageWorkedWith'].str.contains("C#;",na=False).sum()
+    israeli_people_know_c = data_frame.loc[israel_filter]['LanguageWorkedWith'].str.contains("C;",na=False).sum()
+    pandas_logger.info("\n\n************* Israelis Programming languages known details: *************\n ")
+
+    pandas_logger.info("%d From the Israelis participants know Python.\n"
+                       "%d From the Israelis participants know JavaScript.\n %d From the Israelis participants know Java."
+                       "\n%d From the Israelis participants know Scala."
+                       "\n%d From the Israelis participants know C#."
+                       "\n%d From the Israelis participants know C."% (
+        israeli_people_know_python, israeli_people_know_javascript, israeli_people_know_java, israeli_people_know_scala, israeli_people_know_c_sharp,israeli_people_know_c));
+
+    title = "Israelis known Programming languages"
+    labels = ["Python", "JavaScript", "Java", "Scala" , "C#","C++"]
+    data = [israeli_people_know_python,israeli_people_know_javascript,israeli_people_know_java, israeli_people_know_scala, israeli_people_know_c_sharp, israeli_people_know_c]
+    colors = ['gold', 'yellowgreen', 'lightcoral', 'lightskyblue',"gray", "lightblue"]
+    display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
                           statistical_analysis_type_of_viewing)
 
 
@@ -237,16 +491,23 @@ def display_data_visually(title, labels, data, time_the_graph_will_be_displayed_
     timer = get_timer_plt_show_time_with_callback(time_the_graph_will_be_displayed_in_seconds);
     plt.title(title, fontdict=None, loc='center')
 
-    diagram_or_pie = statistical_analysis_type_of_viewing[title];
+    try:
+        diagram_or_pie = statistical_analysis_type_of_viewing[title];
+    except:
+        diagram_or_pie = "diagram"
 
-    if (diagram_or_pie == "diagram"):
-        plt.bar(labels, data, color=colors)
-    else:
+    if (diagram_or_pie == "pie"):
         plt.pie(data, labels=labels, colors=colors,
-            autopct='%1.1f%%', shadow=True, startangle=140)
+                autopct='%1.1f%%', shadow=True, startangle=140)
         plt.axis('equal')
+    else:
+        for i in range(len(data)):
+            plt.annotate(str(data[i]), xy=(labels[i], data[i]))
+
+        plt.bar(labels, data, color=colors)
 
     timer.start()
+
     plt.show()
 
 
