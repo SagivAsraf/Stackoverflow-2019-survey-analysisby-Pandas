@@ -1,17 +1,33 @@
 {
   "configurations": {
-    "time graph will be displayed in seconds": "8",
+    "time graph will be displayed in seconds": "30",
     "email": "sagivasraf23@gmail.com",
     "statistical analysis displayed in diagram or pie": {
+      "Programming as a hobby": "pie",
+      "Social media usage": "pie",
+      "Participants came from:": "pie",
       "Israelis Participants V.S All other participants": "diagram",
       "Participants who earn who earn high salary V.S Other participants": "pie",
       "Israelis who earn high salary V.S All other participants who earn high salary": "diagram",
       "Men who earn High Salary V.S Women who earn high salary": "diagram",
       "Participants who earn high salary claim they have knowledge in:": "pie",
-      "Programming as a hobby": "pie",
-      "Social media usage" : "pie",
-      "Participants came from:" : "pie",
-      "Israelis known Programming languages" : "diagram"
+      "Israelis known Programming languages": "diagram"
+    },
+    "should be displayed": {
+      "Median data on participants participants": "yes",
+      "Programming as a hobby": "yes",
+      "Social media usage": "yes",
+      "Participants came from:": "yes",
+      "Israelis Participants V.S All other participants": "yes",
+      "Participants who earn who earn high salary V.S Other participants": "yes",
+      "Israelis who earn high salary V.S All other participants who earn high salary": "yes",
+      "Men who earn High Salary V.S Women who earn high salary": "yes",
+      "Participants month salary Median categorized by countries:": "yes",
+      "Participants who earn high salary claim they have knowledge in:": "yes",
+      "Israelis known Programming languages": "yes",
+      "Month salary median -> Programming as a hobby": "yes",
+      "Participants month salary Median categorized by years of experience:": "yes",
+      "Women V.S Men Median Salaries in USA and ISRAEL": "yes"
     }
   }
 }
