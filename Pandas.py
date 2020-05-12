@@ -373,8 +373,8 @@ def print_data_on_participants_salaries_by_countries(data_frame, pandas_logger,
                 united_kingdom_participants_month_salary_median, spain_participants_month_salary_median,
                 italy_participants_month_salary_median, israel_participants_month_salary_median))
 
-        pandas_logger.log("\n We can see from the results that Israel are in the second place! The salaries in "
-                          "America are ten times bigger than the salaries in India.")
+        pandas_logger.info("\n We can see from the results that Israel are in the second place! The salaries in "
+                           "America are ten times bigger than the salaries in India.")
 
         labels = [usa, india, germany, united_kingdom, spain, italy, israel]
         data = [usa_participants_month_salary_median, india_participants_month_salary_median,
