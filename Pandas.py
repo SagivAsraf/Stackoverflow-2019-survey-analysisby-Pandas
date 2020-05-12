@@ -86,13 +86,14 @@ def main():
                                        time_the_graph_will_be_displayed_in_seconds,
                                        statistical_analysis_type_of_viewing, should_be_displayed)
 
+    print_data_on_women_men_salaries_by_countries(data_frame, pandas_logger,
+                                                  time_the_graph_will_be_displayed_in_seconds,
+                                                  statistical_analysis_type_of_viewing, should_be_displayed)
+
     print_data_on_years_of_experience_and_salaries(data_frame, pandas_logger,
                                                    time_the_graph_will_be_displayed_in_seconds,
                                                    statistical_analysis_type_of_viewing, should_be_displayed)
 
-    print_data_on_women_men_salaries_by_countries(data_frame, pandas_logger,
-                                                  time_the_graph_will_be_displayed_in_seconds,
-                                                  statistical_analysis_type_of_viewing, should_be_displayed)
 
     # ************* Send the log file to my mail *************
     send_log_file_in_mail(email, pandas_logger)
@@ -569,6 +570,10 @@ def get_timer_plt_show_time_with_callback(time_the_graph_will_be_displayed_in_se
 def display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
                           statistical_analysis_type_of_viewing):
     timer = get_timer_plt_show_time_with_callback(time_the_graph_will_be_displayed_in_seconds);
+
+    man = plt.get_current_fig_manager()
+    man.canvas.set_window_title(title)
+
     plt.title(title, fontdict=None, loc='center')
 
     try:

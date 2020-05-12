@@ -1,6 +1,6 @@
 {
   "configurations": {
-    "time graph will be displayed in seconds": "30",
+    "time graph will be displayed in seconds": "10",
     "email": "sagivasraf23@gmail.com",
     "statistical analysis displayed in diagram or pie": {
       "Programming as a hobby": "pie",
