@@ -1,6 +1,6 @@
 '''
   /*
-    We chose to analyze the yearly survey of the most famous forum of programming in all over the world stackoverflow.com
+    I chose to analyze the yearly survey of the most famous forum of programming in all over the world stackoverflow.com
     The famous survey includes 86 questions that had been answered by more than 100,000 programmers!
 
     Part of the questions that asked in the survey:
