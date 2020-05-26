@@ -25,4 +25,8 @@ the graph in diagram or pie.
 
     You can realize that the participants had been asked to answer various questions types,
     which can help us analyze the data and to reach some interesting conclusions.
+    
   */
+  
+Example for one analysis -> Participants month median salary, categorized by years of experience:
+![Image](https://github.com/SagivAsraf/Stackoverflow-2019-survey-analysisby-Pandas/blob/master/salary-median.png)
