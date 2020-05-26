@@ -1,14 +1,19 @@
 '''
-@authors: Sagiv Asraf 312527450
-          Liran Katz  204483226
-        Project Pandas Show and Analyzing Data Using Pandas
----------------------------------------------------------
-  TODO -> Change description for our PANDAS project.
   /*
-  module_name, package_name, ClassName, method_name,
-   ExceptionName, function_name, GLOBAL_CONSTANT_NAME,
-   global_var_name, instance_var_name, function_parameter_name,
-   local_var_name.
+    We chose to analyze the yearly survey of the most famous forum of programming in all over the world stackoverflow.com
+    The famous survey includes 86 questions that had been answered by more than 100,000 programmers!
+
+    Part of the questions that asked in the survey:
+    Do you code as a hobby?
+    In which country do you currently reside?
+    What is your current total salary?
+    What is your age?
+    What social media site do you use the most?
+    Which of the following do you currently identify as? (Gender)
+    Including any education, how many years have you been coding?
+
+    You can realize that the participants had been asked to answer various questions types,
+    which can help us analyze the data and to reach some interesting conclusions.
   */
 
 ---------------------------------------------------------
@@ -93,7 +98,6 @@ def main():
     print_data_on_years_of_experience_and_salaries(data_frame, pandas_logger,
                                                    time_the_graph_will_be_displayed_in_seconds,
                                                    statistical_analysis_type_of_viewing, should_be_displayed)
-
 
     # ************* Send the log file to my mail *************
     send_log_file_in_mail(email, pandas_logger)
@@ -219,8 +223,9 @@ def print_data_on_participants_countries(data_frame, pandas_logger, time_the_gra
             "\n%d Says they came from the United States.\n%d Says they came from India\n%d Says they came from Germany."
             "\n%d Says they came from United Kingdom.\n%d Says they came from Spain\n%d Says they came from Italy.\n%d Says they came from Israel.\n" % (
                 united_states, india, germany, united_kingdom, spain, italy, israel))
-        pandas_logger.info("\nWe can see from the results that a lot of the participants are americans, but we (Israel) have "
-                           "respectable representation in this survey")
+        pandas_logger.info(
+            "\nWe can see from the results that a lot of the participants are americans, but we (Israel) have "
+            "respectable representation in this survey")
 
         labels = ["United States", "India", "Germany", "United Kingdom", "Spain", "Italy", "Israel"]
         data = [united_states, india, germany, united_kingdom, spain, italy, israel]
@@ -484,7 +489,7 @@ def print_data_on_hobbies_and_salaries(data_frame, pandas_logger, time_the_graph
                 hobby_median_salary, no_hobby_median_salary))
 
         pandas_logger.info("\n We can see that the participants who said they are programming as hobby, earn a little "
-                          "bit more than the others.")
+                           "bit more than the others.")
 
         labels = ["Yes", "No"]
         data = [hobby_median_salary, no_hobby_median_salary]
@@ -516,10 +521,12 @@ def print_data_on_women_men_salaries_by_countries(data_frame, pandas_logger,
     pandas_logger.info("\n\n************* Women V.S Men Median Salaries in USA and ISRAEL*************\n")
     pandas_logger.info(
         "\nAmericans men month salary median is: %d.\nAmericans women month salary median is: %d.\nIsraelis men month salary median is: %d.\nIsraelis women month salary median is: %d." % (
-            americans_men_median_salary,americans_women_median_salary,israelis_men_median_salary,israelis_women_median_salary))
+            americans_men_median_salary, americans_women_median_salary, israelis_men_median_salary,
+            israelis_women_median_salary))
 
-    labels = ["Americans Men", "Americans Women" , "Israelis Men", "Israelis Women"]
-    data = [americans_men_median_salary,americans_women_median_salary,israelis_men_median_salary,israelis_women_median_salary]
+    labels = ["Americans Men", "Americans Women", "Israelis Men", "Israelis Women"]
+    data = [americans_men_median_salary, americans_women_median_salary, israelis_men_median_salary,
+            israelis_women_median_salary]
     colors = ['blue', 'red', 'cyan', 'lightcoral']
 
     display_data_visually(title, labels, data, time_the_graph_will_be_displayed_in_seconds, colors,
